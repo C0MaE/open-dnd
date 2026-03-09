@@ -5,3 +5,4 @@ pub mod adventuring_gear;
 pub mod potion;
 pub mod container;
 pub mod scroll;
+pub mod weapon;

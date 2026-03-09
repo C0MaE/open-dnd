@@ -22,7 +22,22 @@ pub enum WeaponType {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Damage {
     pub dice_count: u8,
-    pub dice_type: DiceType,
+    pub dice_type: DiceType, // z.B. 6 für d6, 8 für d8
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum DamageType {
+    Slashing,
+    Piercing,
+    Bludgeoning,
+    Fire,
+    Cold,
+    Lightning,
+    Poison,
+    Necrotic,
+    Radiant,
+    Psychic,
+    Force,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
