@@ -1,5 +1,4 @@
 use serde::{Serialize, Deserialize};
-use crate::models::damage::DamageType;
 use crate::models::dice::DiceType;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
