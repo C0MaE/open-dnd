@@ -1,4 +1,5 @@
 use serde::{Serialize, Deserialize};
+use crate::models::item::stats::weapon::WeaponStats;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Item {

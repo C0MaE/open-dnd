@@ -1,4 +1,5 @@
 use serde::{Serialize, Deserialize};
+use crate::models::dice::DiceType;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct WeaponStats {
