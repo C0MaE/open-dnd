@@ -5,4 +5,3 @@ pub mod damage;
 pub mod spell;
 pub mod duration;
 pub mod range;
-pub mod dice;
