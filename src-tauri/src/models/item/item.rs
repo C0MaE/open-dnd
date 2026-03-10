@@ -1,4 +1,9 @@
 use serde::{Serialize, Deserialize};
+use crate::models::item::stats::armor::ArmorStats;
+use crate::models::item::stats::container::ContainerStats;
+use crate::models::item::stats::potion::PotionStats;
+use crate::models::item::stats::scroll::ScrollStats;
+use crate::models::item::stats::tool::ToolStats;
 use crate::models::item::stats::weapon::WeaponStats;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -19,10 +24,10 @@ pub enum ItemDetails {
     Weapon(WeaponStats),
     Armor(ArmorStats),
     Tool(ToolStats),
-    AdventuringGear(AdventuringGearStats),
+    AdventuringGear, // TODO: Optional AdventuringGearStats?
     Potion(PotionStats),
     Container(ContainerStats),
-    Scroll(ScrollsStats),
+    Scroll(ScrollStats),
     Valuable,
     Ammunition,
     Gear,
