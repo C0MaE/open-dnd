@@ -1,4 +1,5 @@
 use serde::{Serialize, Deserialize};
+use crate::models::item::magic::{ChargeData, MagicProperty, Rarity};
 use crate::models::item::stats::armor::ArmorStats;
 use crate::models::item::stats::container::ContainerStats;
 use crate::models::item::stats::potion::PotionStats;
@@ -40,14 +41,4 @@ pub struct MagicData {
     pub is_attuned: bool,
     pub charges: Option<ChargeData>,
     pub properties: Vec<MagicProperty>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub enum Rarity {
-    Common,
-    Uncommon,
-    Rare,
-    VeryRare,
-    Legendary,
-    Artifact,
 }

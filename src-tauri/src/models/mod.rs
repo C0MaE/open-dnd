@@ -1,7 +1,19 @@
-pub mod item;
-pub mod dice;
+// Shared primitive types
 pub mod ability;
+pub mod alignment;
+pub mod condition;
+pub mod currency;
 pub mod damage;
-pub mod spell;
+pub mod dice;
 pub mod duration;
 pub mod range;
+pub mod sense;
+pub mod size;
+pub mod skill;
+pub mod speed;
+
+// Game entities
+pub mod spell;
+pub mod item;
+pub mod character;
+pub mod creature;

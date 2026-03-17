@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use crate::models::damage::DamageType;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum DiceType {
