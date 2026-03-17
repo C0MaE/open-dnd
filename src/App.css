@@ -1,526 +1,169 @@
-/* ─────────────────────────────────────────────────────────────────────────────
-   Fonts
-───────────────────────────────────────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap');
+@import "tailwindcss";
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   Reset & base
-───────────────────────────────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ─── Design tokens ──────────────────────────────────────────────────────── */
+@theme {
+  /* Colour palette */
+  --color-ink:           #1a0e00;
+  --color-ink-light:     #3a2010;
+  --color-red-ink:       #8b1a1a;
+  --color-gold:          #c8a84b;
+  --color-gold-dim:      #8b6020;
+  --color-parchment-light: #f4e8c0;
+  --color-parchment-mid:   #e8d490;
+  --color-parchment-dark:  #d4be78;
+  --color-leather:         #3d1c05;
+  --color-leather-light:   #5c3010;
 
-:root {
-  /* ── Colour palette ── */
-  --parchment-light:  #f4e8c0;
-  --parchment-mid:    #e8d490;
-  --parchment-dark:   #d4be78;
-  --ink:              #1a0e00;
-  --ink-light:        #3a2010;
-  --red-ink:          #8b1a1a;
-  --gold:             #c8a84b;
-  --gold-dim:         #8b6020;
-  --leather:          #3d1c05;
-  --leather-light:    #5c3010;
+  /* Font families */
+  --font-cinzel:      'Cinzel', 'Palatino Linotype', serif;
+  --font-cinzel-deco: 'Cinzel Decorative', 'Cinzel', serif;
+  --font-fell:        'IM Fell English', 'Palatino Linotype', Georgia, serif;
+  --font-fell-sc:     'IM Fell English SC', 'Palatino Linotype', serif;
 
-  /*
-   * ── Responsive font scale ──────────────────────────────────────────────
-   *  clamp(floor, preferred-vw, ceiling)
-   *  preferred-vw makes fonts grow linearly with window width so the UI
-   *  looks good anywhere from 1000 px to 2560 px wide.
-   */
-  --fs-xxs:  clamp(0.65rem, 0.60vw, 0.90rem);   /* tiny all-caps labels    */
-  --fs-xs:   clamp(0.72rem, 0.68vw, 1.00rem);   /* small labels / badges   */
-  --fs-sm:   clamp(0.82rem, 0.80vw, 1.12rem);   /* sublabels, captions     */
-  --fs-md:   clamp(0.90rem, 0.90vw, 1.25rem);   /* body / skill names      */
-  --fs-lg:   clamp(1.05rem, 1.10vw, 1.50rem);   /* card names, topbar sub  */
-  --fs-xl:   clamp(1.20rem, 1.40vw, 1.90rem);   /* topbar title, combat    */
-  --fs-2xl:  clamp(1.50rem, 1.90vw, 2.60rem);   /* spell name, ability mod */
-  --fs-3xl:  clamp(1.80rem, 2.50vw, 3.40rem);   /* hp current              */
-  --fs-hero: clamp(2.40rem, 3.80vw, 5.20rem);   /* app title               */
+  /* Responsive font scale — clamp(floor, vw-preferred, ceiling) */
+  --text-deco:    clamp(0.65rem, 0.60vw, 0.90rem);
+  --text-badge:   clamp(0.72rem, 0.68vw, 1.00rem);
+  --text-caption: clamp(0.82rem, 0.80vw, 1.12rem);
+  --text-body:    clamp(0.90rem, 0.90vw, 1.25rem);
+  --text-subhead: clamp(1.05rem, 1.10vw, 1.50rem);
+  --text-heading: clamp(1.20rem, 1.40vw, 1.90rem);
+  --text-display: clamp(1.50rem, 1.90vw, 2.60rem);
+  --text-giant:   clamp(1.80rem, 2.50vw, 3.40rem);
+  --text-hero:    clamp(2.40rem, 3.80vw, 5.20rem);
 }
 
-body {
-  background: #0a0705;
-  color: var(--ink);
-  font-family: 'IM Fell English', 'Palatino Linotype', Georgia, serif;
-  overflow: hidden;
-  user-select: none;
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+@layer base {
+  body {
+    @apply bg-[#0a0705] text-ink overflow-hidden select-none;
+    font-family: var(--font-fell);
+  }
+
+  /* Thin medieval scrollbars on parchment surfaces */
+  .parchment-scroll::-webkit-scrollbar       { width: 4px; }
+  .parchment-scroll::-webkit-scrollbar-track { background: transparent; }
+  .parchment-scroll::-webkit-scrollbar-thumb {
+    background: rgba(100,70,20,0.25);
+    border-radius: 2px;
+  }
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   CHARACTER SELECT SCREEN
-───────────────────────────────────────────────────────────────────────────── */
-.cs-screen {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(28px, 4vh, 56px);
-  background:
-    radial-gradient(ellipse at 50% 40%, #1c1206 0%, #0d0905 50%, #060402 100%);
-  animation: cs-fade-in 0.6s ease;
+/* ─── Reusable decorative patterns ──────────────────────────────────────── */
+@layer components {
+
+  /* Complex multi-layer backgrounds that can't be expressed as single utilities */
+
+  .bg-dungeon {
+    background:
+      radial-gradient(ellipse at 50% 40%, #1c1206 0%, #0d0905 50%, #060402 100%);
+  }
+  .bg-dungeon-dark {
+    background:
+      radial-gradient(ellipse at 50% 30%, #16120c 0%, #0a0805 60%, #050402 100%);
+  }
+  .bg-topbar {
+    background: linear-gradient(to bottom, #100a04, #0a0704);
+  }
+  .bg-parchment-card {
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(255,240,180,0.5) 0%, transparent 70%),
+      linear-gradient(165deg, #f5eac4 0%, #ead894 35%, #f0e2ac 60%, #e6d088 100%);
+  }
+  .bg-parchment-sheet {
+    background:
+      radial-gradient(ellipse at 50% 0%,  rgba(255,240,180,0.45) 0%, transparent 65%),
+      linear-gradient(170deg, #f5eac4 0%, #ead894 30%, #f0e2ac 58%, #e8d48c 82%, #f2e6b8 100%);
+  }
+  .bg-parchment-footer {
+    background:
+      linear-gradient(165deg, #f0e6ba 0%, #e4d088 40%, #ecdea8 70%, #e0cc80 100%);
+  }
+  .bg-parchment-page-left {
+    background:
+      radial-gradient(ellipse at 90% 50%, rgba(150,120,60,0.14) 0%, transparent 55%),
+      radial-gradient(ellipse at 10% 10%, rgba(200,170,90,0.09) 0%, transparent 40%),
+      linear-gradient(162deg, #f5eac4 0%, #ead894 28%, #f0e2ac 55%, #e8d48c 80%, #f2e6b8 100%);
+    box-shadow: inset -12px 0 20px rgba(90,60,10,0.13);
+  }
+  .bg-parchment-page-right {
+    background:
+      radial-gradient(ellipse at 10% 50%, rgba(150,120,60,0.14) 0%, transparent 55%),
+      radial-gradient(ellipse at 90% 10%, rgba(200,170,90,0.09) 0%, transparent 40%),
+      linear-gradient(198deg, #f5eac4 0%, #ead894 28%, #f0e2ac 55%, #e8d48c 80%, #f2e6b8 100%);
+    box-shadow: inset 12px 0 20px rgba(90,60,10,0.13);
+  }
+  .bg-leather-spine {
+    background:
+      linear-gradient(to right, #180e02 0%, #3a1a04 18%, #5a2e0e 50%, #3a1a04 82%, #180e02 100%);
+    box-shadow: inset 4px 0 6px rgba(0,0,0,0.45), inset -4px 0 6px rgba(0,0,0,0.45);
+  }
+
+  /* Shadows */
+  .shadow-book {
+    box-shadow:
+      0 28px 80px rgba(0,0,0,0.95),
+      0 10px 26px rgba(0,0,0,0.70),
+      0 3px  6px  rgba(0,0,0,0.50);
+  }
+  .shadow-card {
+    box-shadow:
+      0 0 0 1px #8b6a28,
+      0 0 0 3px #2e1e04,
+      0 8px 24px rgba(0,0,0,0.75),
+      inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .shadow-card-hover {
+    box-shadow:
+      0 0 0 1px #c8a84b,
+      0 0 0 3px #4a2e00,
+      0 16px 40px rgba(0,0,0,0.85),
+      0 0 28px rgba(200,168,75,0.12),
+      inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .shadow-sheet {
+    box-shadow:
+      0 0 0 1px #7a5a18,
+      0 0 0 3px #1e1004,
+      0 14px 45px rgba(0,0,0,0.85);
+  }
+  .shadow-footer {
+    box-shadow:
+      0 0 0 1px #7a5a18,
+      0 0 0 2px #1e1004,
+      0 5px 14px rgba(0,0,0,0.60);
+  }
+
+  /* Gradient divider lines */
+  .deco-rule {
+    height: 1px;
+    flex-shrink: 0;
+    background: linear-gradient(to right, transparent, #9b7020, #c8a040, #9b7020, transparent);
+  }
+  .deco-rule-subtle {
+    height: 1px;
+    flex-shrink: 0;
+    background: linear-gradient(to right, transparent, rgba(155,112,32,0.5), transparent);
+  }
+  .deco-vline {
+    width: 1px;
+    flex-shrink: 0;
+    background: linear-gradient(to bottom, transparent, rgba(100,70,20,0.3), transparent);
+  }
+
+  /* Animations */
+  .animate-fade-up  { animation: anim-fade-up 0.60s ease; }
+  .animate-fade-up-fast { animation: anim-fade-up 0.45s ease; }
+  .animate-fade-in  { animation: anim-fade-in  0.50s ease; }
 }
 
-@keyframes cs-fade-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+@layer utilities {
+  @keyframes anim-fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes anim-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
 }
-
-.cs-header { text-align: center; }
-
-.cs-deco {
-  font-family: 'Cinzel', serif;
-  color: #4a3818;
-  font-size: var(--fs-sm);
-  letter-spacing: 0.9em;
-  margin-bottom: clamp(8px, 1vh, 16px);
-}
-
-.cs-title {
-  font-family: 'Cinzel Decorative', serif;
-  font-size: var(--fs-hero);
-  color: var(--gold);
-  text-shadow: 0 0 40px rgba(200,168,75,0.35), 0 2px 6px rgba(0,0,0,0.8);
-  letter-spacing: 0.1em;
-  line-height: 1.1;
-}
-
-.cs-subtitle {
-  font-family: 'IM Fell English SC', serif;
-  color: #7a6035;
-  font-size: var(--fs-md);
-  letter-spacing: 0.35em;
-  text-transform: uppercase;
-  margin-top: clamp(6px, 1vh, 14px);
-}
-
-/* Cards */
-.cs-cards {
-  display: flex;
-  gap: clamp(18px, 2.2vw, 40px);
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.cs-card {
-  position: relative;
-  width: clamp(190px, 16vw, 280px);
-  padding: clamp(16px, 2vh, 28px) clamp(14px, 1.5vw, 24px);
-  background:
-    radial-gradient(ellipse at 50% 0%, rgba(255,240,180,0.5) 0%, transparent 70%),
-    linear-gradient(165deg, #f5eac4 0%, #ead894 35%, #f0e2ac 60%, #e6d088 100%);
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  text-align: center;
-  font-family: 'IM Fell English SC', 'Palatino Linotype', serif;
-  box-shadow:
-    0 0 0 1px #8b6a28,
-    0 0 0 3px #2e1e04,
-    0 8px 24px rgba(0,0,0,0.75),
-    inset 0 1px 0 rgba(255,255,255,0.25);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.cs-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow:
-    0 0 0 1px var(--gold),
-    0 0 0 3px #4a2e00,
-    0 16px 40px rgba(0,0,0,0.85),
-    0 0 28px rgba(200,168,75,0.12),
-    inset 0 1px 0 rgba(255,255,255,0.25);
-}
-.cs-card:active { transform: translateY(-4px) scale(1.01); }
-
-.cs-corner {
-  position: absolute;
-  font-size: var(--fs-xxs);
-  color: var(--gold-dim);
-  opacity: 0.6;
-  line-height: 1;
-}
-.cs-corner--tl { top: 6px;  left: 9px; }
-.cs-corner--tr { top: 6px;  right: 9px; }
-.cs-corner--bl { bottom: 6px; left: 9px; }
-.cs-corner--br { bottom: 6px; right: 9px; }
-
-.cs-card-symbol {
-  font-size: clamp(1.8rem, 2.8vw, 3.6rem);
-  color: #5a3010;
-  margin-bottom: clamp(6px, 1vh, 14px);
-  line-height: 1;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
-}
-.cs-card-name  { font-size: var(--fs-lg); font-weight: 600; color: var(--ink); line-height: 1.2; margin-bottom: 3px; }
-.cs-card-race  { font-size: var(--fs-sm); color: #6b4a20; letter-spacing: 0.06em; }
-.cs-card-divider { height: 1px; margin: clamp(7px, 1vh, 14px) 4px; background: linear-gradient(to right, transparent, rgba(100,70,20,0.4), transparent); }
-.cs-card-class { font-size: var(--fs-sm); color: var(--red-ink); font-style: italic; line-height: 1.3; }
-.cs-card-level { font-size: var(--fs-xs); color: #7a5820; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 3px; }
-
-.cs-card-stats { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 4px; }
-.cs-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.cs-stat-label { font-size: var(--fs-xxs); letter-spacing: 0.1em; color: #8a6838; text-transform: uppercase; }
-.cs-stat-value { font-size: var(--fs-sm);  color: var(--ink-light); }
-.cs-stat-hp    { color: #8b1a1a; }
-.cs-stat-ac    { color: #2a4a28; }
-.cs-stat-sep   { color: #9a8050; font-size: var(--fs-sm); margin-top: 6px; }
-
-.cs-card-caster { margin-top: clamp(6px, 1vh, 12px); font-size: var(--fs-xxs); letter-spacing: 0.1em; color: var(--gold-dim); text-transform: uppercase; }
-
-.cs-footer { display: flex; align-items: center; gap: 12px; color: #3a2810; font-size: var(--fs-sm); }
-.cs-footer-line { width: 72px; height: 1px; background: linear-gradient(to right, transparent, #4a3018, transparent); }
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   SPELL BOOK SCREEN
-───────────────────────────────────────────────────────────────────────────── */
-.sb-screen {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background:
-    radial-gradient(ellipse at 50% 30%, #16120c 0%, #0a0805 60%, #050402 100%);
-  animation: sb-fade-in 0.5s ease;
-}
-
-@keyframes sb-fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-.sb-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: clamp(8px, 1.2vh, 16px) clamp(16px, 2vw, 32px);
-  border-bottom: 1px solid #1e1608;
-  flex-shrink: 0;
-}
-
-.sb-back {
-  font-family: 'Cinzel', serif;
-  font-size: var(--fs-sm);
-  letter-spacing: 0.12em;
-  color: #8a7040;
-  background: none;
-  border: 1px solid #2e2010;
-  padding: clamp(5px, 0.7vh, 10px) clamp(12px, 1.4vw, 22px);
-  cursor: pointer;
-  border-radius: 2px;
-  transition: color 0.2s, border-color 0.2s;
-}
-.sb-back:hover { color: var(--gold); border-color: #5a4020; }
-
-.sb-topbar-center { text-align: center; }
-.sb-topbar-title  { display: block; font-family: 'Cinzel', serif; font-size: var(--fs-xl); color: var(--gold); letter-spacing: 0.05em; }
-.sb-topbar-title em { font-style: normal; color: #e8ca60; }
-.sb-topbar-sub    { display: block; font-family: 'IM Fell English SC', serif; font-size: var(--fs-xs); color: #5a4a28; letter-spacing: 0.12em; margin-top: 3px; }
-.sb-topbar-right  { width: clamp(100px, 10vw, 160px); }
-
-.sb-wrap {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(12px, 2vh, 28px) clamp(20px, 3vw, 48px);
-  min-height: 0;
-}
-
-.sb-book {
-  display: flex;
-  height: 100%;
-  max-height: min(88vh, 820px);
-  border-radius: 2px 6px 6px 2px;
-  box-shadow:
-    0 28px 80px rgba(0,0,0,0.95),
-    0 10px 26px rgba(0,0,0,0.7),
-    0 3px 6px  rgba(0,0,0,0.5);
-}
-
-.sb-page {
-  width: clamp(340px, 32vw, 620px);
-  height: 100%;
-  padding: clamp(16px, 2.2vh, 30px) clamp(16px, 1.8vw, 28px) clamp(10px, 1.5vh, 20px);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.sb-page--left {
-  background:
-    radial-gradient(ellipse at 90% 50%, rgba(150,120,60,0.14) 0%, transparent 55%),
-    radial-gradient(ellipse at 10% 10%, rgba(200,170,90,0.09) 0%, transparent 40%),
-    linear-gradient(162deg, #f5eac4 0%, #ead894 28%, #f0e2ac 55%, #e8d48c 80%, #f2e6b8 100%);
-  box-shadow: inset -12px 0 20px rgba(90,60,10,0.13);
-}
-.sb-page--right {
-  background:
-    radial-gradient(ellipse at 10% 50%, rgba(150,120,60,0.14) 0%, transparent 55%),
-    radial-gradient(ellipse at 90% 10%, rgba(200,170,90,0.09) 0%, transparent 40%),
-    linear-gradient(198deg, #f5eac4 0%, #ead894 28%, #f0e2ac 55%, #e8d48c 80%, #f2e6b8 100%);
-  box-shadow: inset 12px 0 20px rgba(90,60,10,0.13);
-}
-
-.sb-page-header  { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: clamp(4px, 0.8vh, 10px); }
-.sb-page-heading { font-family: 'Cinzel', serif; font-size: var(--fs-sm); color: #3e2208; letter-spacing: 0.22em; text-transform: uppercase; }
-.sb-page-orn     { font-size: var(--fs-xxs); color: var(--gold-dim); }
-
-.sb-rule { height: 1px; background: linear-gradient(to right, transparent, #9b7020, #c8a040, #9b7020, transparent); margin: clamp(4px, 0.7vh, 9px) 0; flex-shrink: 0; }
-
-.sb-list { flex: 1; overflow-y: auto; overflow-x: hidden; padding-right: 3px; }
-.sb-list::-webkit-scrollbar       { width: 4px; }
-.sb-list::-webkit-scrollbar-track { background: transparent; }
-.sb-list::-webkit-scrollbar-thumb { background: rgba(100,70,20,0.25); border-radius: 2px; }
-
-.sb-group       { margin-bottom: clamp(8px, 1.2vh, 16px); }
-.sb-group-label { font-family: 'Cinzel', serif; font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.28em; color: var(--red-ink); padding-bottom: 4px; margin-bottom: 3px; border-bottom: 1px solid rgba(139,26,26,0.25); }
-
-.sb-entry { display: flex; align-items: center; gap: clamp(5px, 0.6vw, 10px); width: 100%; background: none; border: none; padding: clamp(3px, 0.5vh, 8px) clamp(5px, 0.6vw, 10px); cursor: pointer; border-radius: 2px; transition: background 0.15s; text-align: left; }
-.sb-entry:hover       { background: rgba(90,60,10,0.10); }
-.sb-entry--active     { background: rgba(90,60,10,0.18) !important; }
-.sb-entry--prepared .sb-entry-name { font-weight: bold; }
-
-.sb-entry-dot  { font-size: var(--fs-sm); width: clamp(14px, 1.2vw, 20px); text-align: center; flex-shrink: 0; }
-.sb-entry-name { font-family: 'IM Fell English SC', 'Palatino Linotype', serif; font-size: var(--fs-md); color: var(--ink); flex: 1; line-height: 1.3; }
-.sb-badge      { font-family: 'Cinzel', serif; font-size: var(--fs-xxs); color: var(--gold-dim); background: rgba(100,70,20,0.14); padding: 2px 4px; border-radius: 2px; }
-
-.sb-page-number { text-align: center; font-family: 'Cinzel', serif; font-size: var(--fs-xxs); color: #9a8050; margin-top: clamp(6px, 1vh, 14px); letter-spacing: 0.2em; flex-shrink: 0; }
-
-.sb-spine {
-  width: clamp(24px, 2.2vw, 40px);
-  height: 100%;
-  flex-shrink: 0;
-  background: linear-gradient(to right, #180e02 0%, #3a1a04 18%, #5a2e0e 50%, #3a1a04 82%, #180e02 100%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-evenly;
-  padding: clamp(20px, 3vh, 40px) 0;
-  box-shadow: inset 4px 0 6px rgba(0,0,0,0.45), inset -4px 0 6px rgba(0,0,0,0.45);
-}
-.sb-spine-mark { width: 55%; height: 1px; background: linear-gradient(to right, transparent, rgba(140,90,40,0.6), transparent); }
-
-/* Spell detail */
-.sb-detail-top    { margin-bottom: clamp(4px, 0.7vh, 8px); }
-.sb-detail-school { font-family: 'Cinzel', serif; font-size: var(--fs-xs); letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 5px; }
-.sb-detail-name   { font-family: 'Cinzel Decorative', 'Cinzel', serif; font-size: var(--fs-2xl); color: var(--ink); line-height: 1.2; margin-bottom: 5px; text-shadow: 1px 1px 0 rgba(255,255,255,0.2); }
-.sb-detail-level  { font-family: 'IM Fell English SC', serif; font-size: var(--fs-sm); color: #6b4020; font-style: italic; }
-
-.sb-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(4px, 0.6vh, 10px) clamp(10px, 1.4vw, 22px); margin: clamp(5px, 0.8vh, 10px) 0; }
-.sb-stat       { display: flex; flex-direction: column; gap: 2px; }
-.sb-stat-label { font-family: 'Cinzel', serif; font-size: var(--fs-xxs); text-transform: uppercase; letter-spacing: 0.15em; color: var(--red-ink); }
-.sb-stat-val   { font-family: 'IM Fell English SC', 'Palatino Linotype', serif; font-size: var(--fs-md); color: var(--ink); line-height: 1.3; }
-.sb-material   { font-size: var(--fs-xs); color: #6a4820; font-style: italic; }
-
-.sb-desc { flex: 1; overflow-y: auto; padding-right: 4px; min-height: 0; }
-.sb-desc::-webkit-scrollbar       { width: 4px; }
-.sb-desc::-webkit-scrollbar-track { background: transparent; }
-.sb-desc::-webkit-scrollbar-thumb { background: rgba(100,70,20,0.25); border-radius: 2px; }
-
-.sb-desc p       { font-family: 'IM Fell English', 'Palatino Linotype', serif; font-size: var(--fs-md); color: var(--ink); line-height: 1.7; text-align: justify; margin-bottom: clamp(6px, 1vh, 12px); }
-.sb-higher       { font-family: 'IM Fell English', 'Palatino Linotype', serif; font-size: var(--fs-sm); color: var(--ink-light); line-height: 1.6; padding: clamp(6px, 1vh, 12px) clamp(8px, 1vw, 14px); border: 1px solid rgba(100,70,20,0.22); border-radius: 2px; background: rgba(100,70,20,0.05); margin-top: 8px; }
-.sb-higher-label { font-weight: bold; color: var(--red-ink); }
-
-.sb-prepared-badge { display: inline-block; font-family: 'Cinzel', serif; font-size: var(--fs-xs); letter-spacing: 0.2em; color: #4a7028; border: 1px solid rgba(74,112,40,0.35); padding: clamp(3px, 0.4vh, 6px) clamp(8px, 1vw, 14px); border-radius: 2px; background: rgba(74,112,40,0.07); margin-top: clamp(6px, 1vh, 12px); flex-shrink: 0; }
-
-.sb-empty     { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: #9a8050; }
-.sb-empty-orn { font-size: clamp(2rem, 3vw, 3.5rem); color: var(--gold); opacity: 0.3; }
-.sb-empty p   { font-family: 'IM Fell English', serif; font-style: italic; font-size: var(--fs-md); text-align: center; line-height: 1.5; }
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   CHARACTER SHEET SCREEN
-───────────────────────────────────────────────────────────────────────────── */
-.ch-screen {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: radial-gradient(ellipse at 50% 40%, #1c1206 0%, #0d0905 50%, #060402 100%);
-  animation: cs-fade-in 0.45s ease;
-  overflow: hidden;
-}
-
-.ch-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: clamp(8px, 1.2vh, 16px) clamp(14px, 1.8vw, 28px);
-  border-bottom: 1px solid #1e1608;
-  flex-shrink: 0;
-  background: linear-gradient(to bottom, #100a04, #0a0704);
-}
-
-.ch-btn-nav {
-  font-family: 'Cinzel', serif;
-  font-size: var(--fs-sm);
-  letter-spacing: 0.12em;
-  color: #8a7040;
-  background: none;
-  border: 1px solid #2e2010;
-  padding: clamp(5px, 0.6vh, 9px) clamp(12px, 1.4vw, 22px);
-  cursor: pointer;
-  border-radius: 2px;
-  transition: color 0.2s, border-color 0.2s;
-  white-space: nowrap;
-}
-.ch-btn-nav:hover { color: var(--gold); border-color: #5a4020; }
-
-.ch-topbar-center { text-align: center; }
-.ch-topbar-name   { display: block; font-family: 'Cinzel Decorative', serif; font-size: var(--fs-xl); color: var(--gold); letter-spacing: 0.06em; line-height: 1.2; }
-.ch-topbar-sub    { display: block; font-family: 'IM Fell English SC', serif; font-size: var(--fs-xs); color: #5a4a28; letter-spacing: 0.12em; margin-top: 2px; }
-
-.ch-btn-spellbook {
-  font-family: 'Cinzel', serif;
-  font-size: var(--fs-sm);
-  letter-spacing: 0.1em;
-  color: var(--gold-dim);
-  background: linear-gradient(160deg, #2a1a06 0%, #1a1004 100%);
-  border: 1px solid #5a3e14;
-  padding: clamp(5px, 0.6vh, 9px) clamp(12px, 1.4vw, 22px);
-  cursor: pointer;
-  border-radius: 2px;
-  transition: color 0.2s, border-color 0.2s, box-shadow 0.2s;
-  white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-}
-.ch-btn-spellbook:hover { color: var(--gold); border-color: var(--gold-dim); box-shadow: 0 2px 14px rgba(200,168,75,0.2); }
-
-/* 3-column parchment body */
-.ch-body {
-  flex: 1;
-  display: flex;
-  margin: clamp(8px, 1.2vh, 16px) clamp(10px, 1.2vw, 20px) clamp(6px, 0.8vh, 12px);
-  background:
-    radial-gradient(ellipse at 50% 0%, rgba(255,240,180,0.45) 0%, transparent 65%),
-    linear-gradient(170deg, #f5eac4 0%, #ead894 30%, #f0e2ac 58%, #e8d48c 82%, #f2e6b8 100%);
-  border-radius: 3px;
-  box-shadow: 0 0 0 1px #7a5a18, 0 0 0 3px #1e1004, 0 14px 45px rgba(0,0,0,0.85);
-  overflow: hidden;
-  min-height: 0;
-}
-
-.ch-col {
-  display: flex;
-  flex-direction: column;
-  padding: clamp(10px, 1.4vh, 20px) clamp(10px, 1.2vw, 20px) clamp(8px, 1vh, 14px);
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-.ch-col::-webkit-scrollbar       { width: 4px; }
-.ch-col::-webkit-scrollbar-track { background: transparent; }
-.ch-col::-webkit-scrollbar-thumb { background: rgba(100,70,20,0.25); border-radius: 2px; }
-
-.ch-col--left  { width: clamp(185px, 17vw, 310px); flex-shrink: 0; border-right: 1px solid rgba(100,70,20,0.2); background: linear-gradient(to right, rgba(90,60,10,0.04), transparent); }
-.ch-col--center { flex: 1; border-right: 1px solid rgba(100,70,20,0.2); }
-.ch-col--right  { width: clamp(220px, 22vw, 400px); flex-shrink: 0; }
-
-.ch-section-label { font-family: 'Cinzel', serif; font-size: var(--fs-xxs); letter-spacing: 0.28em; text-transform: uppercase; color: var(--red-ink); margin-bottom: clamp(5px, 0.7vh, 10px); }
-
-.ch-rule { height: 1px; background: linear-gradient(to right, transparent, rgba(155,112,32,0.5), transparent); margin: clamp(6px, 0.9vh, 13px) 0; flex-shrink: 0; }
-
-/* Ability scores */
-.ch-abilities { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(5px, 0.7vh, 10px) clamp(6px, 0.8vw, 12px); margin-bottom: clamp(4px, 0.5vh, 8px); }
-.ch-ability   { display: flex; flex-direction: column; align-items: center; padding: clamp(5px, 0.8vh, 12px) clamp(4px, 0.5vw, 8px) clamp(4px, 0.6vh, 9px); background: rgba(90,60,10,0.07); border: 1px solid rgba(100,70,20,0.2); border-radius: 2px; }
-.ch-ability-label { font-family: 'Cinzel', serif; font-size: var(--fs-xxs); letter-spacing: 0.15em; color: var(--red-ink); text-transform: uppercase; margin-bottom: 2px; }
-.ch-ability-mod   { font-family: 'Cinzel Decorative', serif; font-size: var(--fs-2xl); color: var(--ink); line-height: 1; }
-.ch-ability-score { font-family: 'IM Fell English SC', serif; font-size: var(--fs-xs); color: #7a5820; margin-top: 2px; }
-
-.ch-prof-row   { display: flex; align-items: center; justify-content: space-between; padding: clamp(3px, 0.4vh, 6px) 0; }
-.ch-prof-label { font-family: 'IM Fell English SC', serif; font-size: var(--fs-sm); color: #5a3a18; }
-.ch-prof-val   { font-family: 'Cinzel', serif; font-size: var(--fs-md); color: var(--ink); }
-
-.ch-spell-info { display: flex; flex-direction: column; gap: clamp(2px, 0.4vh, 5px); }
-.ch-spell-row  { display: flex; justify-content: space-between; align-items: center; }
-.ch-spell-key  { font-family: 'IM Fell English SC', serif; font-size: var(--fs-sm); color: #7a5030; }
-.ch-spell-val  { font-family: 'Cinzel', serif; font-size: var(--fs-sm); color: var(--ink); }
-
-.ch-inspiration { font-family: 'Cinzel', serif; font-size: var(--fs-xs); letter-spacing: 0.18em; color: #4a7028; text-align: center; padding: clamp(3px, 0.4vh, 7px); border: 1px solid rgba(74,112,40,0.3); border-radius: 2px; background: rgba(74,112,40,0.06); }
-
-/* HP */
-.ch-hp-block    { flex-shrink: 0; }
-.ch-hp-bar-wrap { margin: clamp(4px, 0.7vh, 10px) 0 clamp(4px, 0.6vh, 8px); }
-.ch-hp-bar-track { height: clamp(8px, 1.2vh, 16px); background: rgba(0,0,0,0.12); border-radius: 6px; border: 1px solid rgba(100,70,20,0.2); overflow: hidden; }
-.ch-hp-bar-fill  { height: 100%; border-radius: 6px; transition: width 0.3s ease, background 0.3s ease; }
-
-.ch-hp-row { display: flex; align-items: center; justify-content: center; gap: clamp(8px, 1.2vw, 20px); margin-top: clamp(4px, 0.6vh, 8px); }
-.ch-hp-btn { width: clamp(24px, 2.2vw, 34px); height: clamp(24px, 2.2vw, 34px); background: rgba(90,60,10,0.1); border: 1px solid rgba(100,70,20,0.3); border-radius: 2px; cursor: pointer; font-size: var(--fs-lg); line-height: 1; color: var(--ink-light); display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
-.ch-hp-btn:hover { background: rgba(90,60,10,0.22); }
-
-.ch-hp-display { cursor: text; }
-.ch-hp-current { font-family: 'Cinzel Decorative', serif; font-size: var(--fs-3xl); line-height: 1; }
-.ch-hp-sep     { font-family: 'IM Fell English', serif; font-size: var(--fs-xl); color: #8a7040; }
-.ch-hp-max     { font-family: 'Cinzel', serif; font-size: var(--fs-xl); color: #5a4020; }
-.ch-hp-input   { width: clamp(60px, 6vw, 90px); text-align: center; font-family: 'Cinzel Decorative', serif; font-size: var(--fs-2xl); background: rgba(255,240,180,0.5); border: 1px solid rgba(100,70,20,0.4); border-radius: 2px; color: var(--ink); padding: 2px 4px; }
-.ch-hp-temp    { text-align: center; font-family: 'IM Fell English SC', serif; font-size: var(--fs-xs); color: #3a6a8a; margin-top: 2px; }
-
-/* Combat row */
-.ch-combat-row  { display: flex; align-items: center; justify-content: center; }
-.ch-combat-stat { display: flex; flex-direction: column; align-items: center; flex: 1; }
-.ch-combat-val  { font-family: 'Cinzel Decorative', serif; font-size: var(--fs-2xl); color: var(--ink); line-height: 1; }
-.ch-combat-key  { font-family: 'Cinzel', serif; font-size: var(--fs-xxs); letter-spacing: 0.18em; text-transform: uppercase; color: var(--red-ink); margin-top: 3px; }
-.ch-combat-sep  { width: 1px; height: clamp(30px, 4vh, 50px); background: linear-gradient(to bottom, transparent, rgba(100,70,20,0.3), transparent); flex-shrink: 0; }
-
-.ch-hitdice-row   { display: flex; justify-content: space-between; align-items: center; }
-.ch-hitdice-label { font-family: 'IM Fell English SC', serif; font-size: var(--fs-sm); color: #5a3a18; }
-.ch-hitdice-val   { font-family: 'Cinzel', serif; font-size: var(--fs-sm); color: var(--ink); }
-
-/* Death saves */
-.ch-saves-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: clamp(3px, 0.4vh, 6px); }
-.ch-saves-key { font-family: 'IM Fell English SC', serif; font-size: var(--fs-sm); }
-.saves-success { color: #3a6a28; }
-.saves-failure { color: var(--red-ink); }
-.ch-saves-pips { display: flex; gap: clamp(5px, 0.8vw, 10px); }
-.ch-pip         { font-size: var(--fs-md); color: rgba(100,70,20,0.3); }
-.ch-pip--success { color: #3a6a28; }
-.ch-pip--failure { color: var(--red-ink); }
-
-.ch-conditions { display: flex; flex-wrap: wrap; gap: 5px; }
-.ch-condition  { font-family: 'Cinzel', serif; font-size: var(--fs-xxs); letter-spacing: 0.1em; color: var(--red-ink); background: rgba(139,26,26,0.08); border: 1px solid rgba(139,26,26,0.2); padding: 3px 8px; border-radius: 2px; }
-
-/* Saving throws */
-.ch-throws    { display: flex; flex-direction: column; gap: clamp(2px, 0.4vh, 6px); margin-bottom: 3px; }
-.ch-throw-row { display: flex; align-items: center; gap: clamp(5px, 0.7vw, 10px); }
-.ch-throw-dot  { font-size: var(--fs-sm); }
-.ch-throw-name { font-family: 'IM Fell English SC', serif; font-size: var(--fs-sm); color: var(--ink); width: clamp(28px, 2.6vw, 44px); flex-shrink: 0; }
-.ch-throw-val  { font-family: 'Cinzel', serif; font-size: var(--fs-sm); color: #2a2a1a; margin-left: auto; }
-
-/* Skills */
-.ch-skills { display: flex; flex-direction: column; gap: clamp(1px, 0.3vh, 4px); overflow-y: auto; flex: 1; min-height: 0; padding-right: 3px; }
-.ch-skills::-webkit-scrollbar       { width: 4px; }
-.ch-skills::-webkit-scrollbar-track { background: transparent; }
-.ch-skills::-webkit-scrollbar-thumb { background: rgba(100,70,20,0.25); border-radius: 2px; }
-
-.ch-skill-row    { display: flex; align-items: center; gap: clamp(4px, 0.5vw, 8px); padding: clamp(1px, 0.3vh, 4px) 3px; border-radius: 2px; transition: background 0.12s; }
-.ch-skill-row:hover { background: rgba(90,60,10,0.08); }
-.ch-skill-dot    { font-size: var(--fs-sm); }
-.ch-skill-name   { font-family: 'IM Fell English SC', serif; font-size: var(--fs-sm); color: var(--ink); flex: 1; white-space: nowrap; }
-.ch-skill-ability { font-family: 'Cinzel', serif; font-size: var(--fs-xxs); color: #9a7850; flex-shrink: 0; }
-.ch-skill-val    { font-family: 'Cinzel', serif; font-size: var(--fs-sm); color: #2a2a1a; width: clamp(22px, 2.2vw, 34px); text-align: right; flex-shrink: 0; }
-
-.dot-none       { color: rgba(100,70,20,0.3); }
-.dot-half       { color: #7a6020; }
-.dot-proficient { color: #2a5a28; }
-.dot-expertise  { color: #2a408a; }
-
-/* Footer strip */
-.ch-footer {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  margin: 0 clamp(10px, 1.2vw, 20px) clamp(8px, 1.1vh, 14px);
-  background: linear-gradient(165deg, #f0e6ba 0%, #e4d088 40%, #ecdea8 70%, #e0cc80 100%);
-  border-radius: 2px;
-  box-shadow: 0 0 0 1px #7a5a18, 0 0 0 2px #1e1004, 0 5px 14px rgba(0,0,0,0.6);
-  padding: clamp(6px, 0.9vh, 12px) clamp(12px, 1.4vw, 22px);
-  flex-shrink: 0;
-}
-
-.ch-footer-block    { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.ch-footer-features { flex: 2; }
-
-.ch-footer-sep { width: 1px; height: clamp(24px, 3.5vh, 40px); background: linear-gradient(to bottom, transparent, rgba(100,70,20,0.3), transparent); margin: 0 clamp(10px, 1.2vw, 18px); flex-shrink: 0; }
-
-.ch-footer-label { font-family: 'Cinzel', serif; font-size: var(--fs-xxs); letter-spacing: 0.2em; text-transform: uppercase; color: var(--red-ink); margin-bottom: 3px; }
-.ch-footer-val   { font-family: 'IM Fell English SC', serif; font-size: var(--fs-sm); color: var(--ink); line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
