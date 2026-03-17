@@ -1,12 +1,8 @@
+// ── Spells ────────────────────────────────────────────────────────────────────
+
 export type SpellSchool =
-  | 'Abjuration'
-  | 'Conjuration'
-  | 'Divination'
-  | 'Enchantment'
-  | 'Evocation'
-  | 'Illusion'
-  | 'Necromancy'
-  | 'Transmutation'
+  | 'Abjuration' | 'Conjuration' | 'Divination' | 'Enchantment'
+  | 'Evocation'  | 'Illusion'   | 'Necromancy' | 'Transmutation'
 
 export interface SpellComponents {
   verbal: boolean
@@ -17,7 +13,7 @@ export interface SpellComponents {
 export interface Spell {
   id: string
   name: string
-  level: number        // 0 = cantrip, 1–9 = leveled
+  level: number
   school: SpellSchool
   castingTime: string
   range: string
@@ -29,6 +25,63 @@ export interface Spell {
   higherLevels: string | null
 }
 
+// ── Character ─────────────────────────────────────────────────────────────────
+
+export type AbilityName =
+  | 'strength' | 'dexterity' | 'constitution'
+  | 'intelligence' | 'wisdom' | 'charisma'
+
+export type SkillName =
+  | 'acrobatics' | 'animalHandling' | 'arcana' | 'athletics'
+  | 'deception'  | 'history'       | 'insight' | 'intimidation'
+  | 'investigation' | 'medicine'   | 'nature'  | 'perception'
+  | 'performance'   | 'persuasion' | 'religion'| 'sleightOfHand'
+  | 'stealth'       | 'survival'
+
+export type ProficiencyLevel = 'none' | 'half' | 'proficient' | 'expertise'
+
+export interface SkillEntry {
+  name: SkillName
+  ability: AbilityName
+  proficiency: ProficiencyLevel
+}
+
+export interface AbilityScores {
+  strength: number
+  dexterity: number
+  constitution: number
+  intelligence: number
+  wisdom: number
+  charisma: number
+}
+
+export interface HitDice {
+  die: string   // 'd6' | 'd8' | 'd10' | 'd12'
+  total: number
+  used: number
+}
+
+export interface DeathSaves {
+  successes: number  // 0–3
+  failures: number   // 0–3
+}
+
+export interface CharacterFeature {
+  name: string
+  source: string
+  usesMax: number | null
+  usesCurrent: number | null
+  recharge: string | null
+}
+
+export interface Currency {
+  cp: number
+  sp: number
+  ep: number
+  gp: number
+  pp: number
+}
+
 export interface Character {
   id: string
   name: string
@@ -36,10 +89,34 @@ export interface Character {
   className: string
   level: number
   subclass: string | null
+  background: string
   alignment: string
-  hp: { current: number; max: number }
+  experiencePoints: number
+
+  scores: AbilityScores
+
+  hp: { current: number; max: number; temp: number }
   ac: number
+  initiativeBonus: number
+  speed: number
+  proficiencyBonus: number
+
+  savingThrowProficiencies: AbilityName[]
+  skills: SkillEntry[]
+
+  hitDice: HitDice
+  deathSaves: DeathSaves
+  inspiration: boolean
+  conditions: string[]
+
   spellcastingAbility: string | null
-  knownSpells: string[]    // spell IDs
-  preparedSpells: string[] // spell IDs
+  spellSaveDC: number | null
+  spellAttackBonus: number | null
+  knownSpells: string[]
+  preparedSpells: string[]
+
+  features: CharacterFeature[]
+  currency: Currency
+  languages: string[]
+  otherProficiencies: string[]
 }
