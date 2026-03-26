@@ -92,6 +92,7 @@ export const mockCharacters: Character[] = [
       'Daggers', 'Darts', 'Slings', 'Quarterstaffs', 'Light crossbows',
       'Longswords', 'Shortswords', 'Shortbows', 'Longbows',
     ],
+    items: [],
   },
 
   // ── Human Fighter 3 / Champion ────────────────────────────────────────────
@@ -143,6 +144,7 @@ export const mockCharacters: Character[] = [
       'All armor', 'Shields', 'Simple weapons', 'Martial weapons',
       'Playing cards', 'Land vehicles',
     ],
+    items: [],
   },
 
   // ── Hill Dwarf Cleric 2 / Life Domain ─────────────────────────────────────
@@ -197,6 +199,7 @@ export const mockCharacters: Character[] = [
       'Simple weapons', 'Battleaxes', 'Handaxes', 'Light hammers', 'Warhammers',
       "Smith's tools",
     ],
+    items: [],
   },
 ]
 

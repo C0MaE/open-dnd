@@ -10,9 +10,9 @@ const SYNC_KEY = 'open-dnd-sync-enabled'
 
 // ── Sync preference ────────────────────────────────────────────────────────
 
-/** Returns true if the user has online sync enabled (default: true). */
+/** Returns true if the user has online sync enabled (default: false). */
 export function isSyncEnabled(): boolean {
-  return localStorage.getItem(SYNC_KEY) !== 'false'
+  return localStorage.getItem(SYNC_KEY) === 'true'
 }
 
 /** Persist the user's sync preference. */

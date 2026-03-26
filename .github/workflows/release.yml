@@ -1,0 +1,77 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      draft:
+        description: 'Create as draft release'
+        type: boolean
+        default: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ubuntu-22.04
+            bundles: appimage,deb
+          - platform: macos-latest
+            bundles: dmg
+          - platform: windows-latest
+            bundles: nsis,msi
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install Linux system dependencies
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build and release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'open-dnd ${{ github.ref_name }}'
+          releaseBody: |
+            ## open-dnd ${{ github.ref_name }}
+
+            Offline-first D&D 5e character manager.
+
+            ### Installation
+            - **Linux**: download the `.AppImage` (run anywhere) or `.deb` (Debian/Ubuntu)
+            - **macOS**: download the `.dmg`
+            - **Windows**: download the `.msi` or `.exe` installer
+          releaseDraft: ${{ github.event.inputs.draft || 'true' }}
+          prerelease: false
+          args: --bundles ${{ matrix.bundles }}

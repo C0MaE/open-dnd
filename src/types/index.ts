@@ -1,3 +1,28 @@
+// ── Items ─────────────────────────────────────────────────────────────────────
+
+export type ItemCategory =
+  | 'Weapon' | 'Armor' | 'Adventuring Gear' | 'Tool'
+  | 'Potion' | 'Scroll' | 'Container' | 'Valuable'
+  | 'Ammunition' | 'Magic Item' | 'Other'
+
+export type ItemRarity =
+  | 'Common' | 'Uncommon' | 'Rare' | 'Very Rare' | 'Legendary' | 'Artifact'
+
+export interface Item {
+  id: string
+  name: string
+  category: ItemCategory
+  description: string
+  quantity: number
+  weight: number       // lbs per unit
+  value: number        // gp
+  equipped: boolean
+  rarity: ItemRarity | null
+  requiresAttunement: boolean
+  isAttuned: boolean
+  notes: string
+}
+
 // ── Spells ────────────────────────────────────────────────────────────────────
 
 export type SpellSchool =
@@ -119,4 +144,5 @@ export interface Character {
   currency: Currency
   languages: string[]
   otherProficiencies: string[]
+  items: Item[]
 }

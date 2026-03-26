@@ -287,6 +287,7 @@ export function CharacterBuilder({ onCreated, onCancel }: Props) {
       currency: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 },
       languages: [...race.languages],
       otherProficiencies: [],
+      items: [],
     }
 
     try {

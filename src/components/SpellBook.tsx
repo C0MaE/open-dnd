@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react'
-import type { Character, Spell } from '../types'
-import { mockSpells } from '../data/mockData'
+import type { Character, Spell, SpellSchool } from '../types'
+import { SPELL_CATALOG } from '../data/spellCatalog'
 
 interface Props {
   character: Character
   onBack: () => void
+  onUpdate: (c: Character) => void
 }
 
 const SCHOOL_COLOR: Record<string, string> = {
@@ -17,6 +18,11 @@ const SCHOOL_SYMBOL: Record<string, string> = {
   Abjuration: '◎', Conjuration: '◈', Divination: '◉', Enchantment: '◐',
   Evocation: '◆', Illusion: '◌', Necromancy: '◑', Transmutation: '◒',
 }
+
+const ALL_SCHOOLS: SpellSchool[] = [
+  'Abjuration', 'Conjuration', 'Divination', 'Enchantment',
+  'Evocation', 'Illusion', 'Necromancy', 'Transmutation',
+]
 
 function ordinalSuffix(n: number) {
   if (n === 1) return 'st'
@@ -33,13 +39,37 @@ function componentString(spell: Spell) {
   return parts.join(', ')
 }
 
-export function SpellBook({ character, onBack }: Props) {
-  const characterSpells = useMemo(() => {
-    const ids = new Set([...character.knownSpells, ...character.preparedSpells])
-    return mockSpells.filter(s => ids.has(s.id))
-  }, [character])
+export function SpellBook({ character, onBack, onUpdate }: Props) {
+  const [tab, setTab] = useState<'mine' | 'browse'>('mine')
+  const [preparedSpells, setPreparedSpells] = useState<string[]>(character.preparedSpells)
+  const [knownSpells, setKnownSpells] = useState<string[]>(character.knownSpells)
 
-  const [selected, setSelected] = useState<Spell | null>(characterSpells[0] ?? null)
+  // Browse filters
+  const [browseLevel, setBrowseLevel] = useState<number | 'all'>('all')
+  const [browseSchool, setBrowseSchool] = useState<SpellSchool | 'all'>('all')
+  const [browseSearch, setBrowseSearch] = useState('')
+
+  const characterSpells = useMemo(() => {
+    if (tab === 'mine') {
+      const ids = new Set([...knownSpells, ...preparedSpells])
+      return SPELL_CATALOG.filter(s => ids.has(s.id))
+    }
+    // browse tab: filter the full catalog
+    return SPELL_CATALOG.filter(s => {
+      if (browseLevel !== 'all' && s.level !== browseLevel) return false
+      if (browseSchool !== 'all' && s.school !== browseSchool) return false
+      if (browseSearch.trim()) {
+        const q = browseSearch.toLowerCase()
+        if (!s.name.toLowerCase().includes(q)) return false
+      }
+      return true
+    })
+  }, [tab, knownSpells, preparedSpells, browseLevel, browseSchool, browseSearch])
+
+  const [selected, setSelected] = useState<Spell | null>(() => {
+    const ids = new Set([...character.knownSpells, ...character.preparedSpells])
+    return SPELL_CATALOG.find(s => ids.has(s.id)) ?? null
+  })
 
   const grouped = useMemo(() => {
     const g: Record<number, Spell[]> = {}
@@ -49,7 +79,49 @@ export function SpellBook({ character, onBack }: Props) {
     return g
   }, [characterSpells])
 
-  const isPrepared = (id: string) => character.preparedSpells.includes(id)
+  const isPrepared = (id: string) => preparedSpells.includes(id)
+  const isKnown = (id: string) => knownSpells.includes(id)
+
+  function togglePrepared(spell: Spell) {
+    if (spell.level === 0) return
+    const updated = isPrepared(spell.id)
+      ? preparedSpells.filter(id => id !== spell.id)
+      : [...preparedSpells, spell.id]
+    setPreparedSpells(updated)
+    onUpdate({ ...character, knownSpells, preparedSpells: updated })
+  }
+
+  function learnSpell(spell: Spell) {
+    if (isKnown(spell.id)) return
+    const updatedKnown = [...knownSpells, spell.id]
+    setKnownSpells(updatedKnown)
+    onUpdate({ ...character, knownSpells: updatedKnown, preparedSpells })
+  }
+
+  function forgetSpell(spell: Spell) {
+    if (!isKnown(spell.id)) return
+    const updatedKnown = knownSpells.filter(id => id !== spell.id)
+    const updatedPrepared = preparedSpells.filter(id => id !== spell.id)
+    setKnownSpells(updatedKnown)
+    setPreparedSpells(updatedPrepared)
+    onUpdate({ ...character, knownSpells: updatedKnown, preparedSpells: updatedPrepared })
+  }
+
+  // Tab button style helper
+  const tabBtnCls = (active: boolean) => [
+    'font-cinzel text-deco tracking-[0.15em] px-[clamp(10px,1.2vw,18px)] py-[clamp(3px,0.4vh,6px)]',
+    'rounded-sm border cursor-pointer transition-colors',
+    active
+      ? 'text-[#3e2208] border-[rgba(100,70,20,0.45)] bg-[rgba(90,60,10,0.22)]'
+      : 'text-[rgba(100,70,20,0.55)] border-[rgba(100,70,20,0.18)] bg-transparent hover:text-[#6a4820] hover:border-[rgba(100,70,20,0.32)]',
+  ].join(' ')
+
+  const filterBtnCls = (active: boolean) => [
+    'font-cinzel text-deco px-1.5 py-0.5 rounded-sm border cursor-pointer transition-colors',
+    active
+      ? 'text-[#3e2208] border-[rgba(100,70,20,0.5)] bg-[rgba(90,60,10,0.2)]'
+      : 'text-[rgba(100,70,20,0.45)] border-[rgba(100,70,20,0.18)] bg-transparent hover:text-[#6a4820] hover:border-[rgba(100,70,20,0.35)]',
+  ].join(' ')
 
   return (
     <div className="w-screen h-screen flex flex-col bg-dungeon-dark animate-fade-in">
@@ -69,6 +141,7 @@ export function SpellBook({ character, onBack }: Props) {
           </span>
           <span className="block font-fell-sc text-badge text-[#5a4a28] tracking-[0.12em] mt-0.5">
             {character.race} {character.className} · Level {character.level}
+            &ensp;·&ensp;{preparedSpells.length} prepared
           </span>
         </div>
 
@@ -81,16 +154,69 @@ export function SpellBook({ character, onBack }: Props) {
 
           {/* ── Left page — spell index ── */}
           <div className="bg-parchment-page-left flex flex-col w-[clamp(340px,32vw,620px)] h-full px-[clamp(16px,1.8vw,28px)] py-[clamp(16px,2.2vh,30px)] overflow-hidden">
-            <div className="flex items-center justify-center gap-2.5 mb-[clamp(4px,0.8vh,10px)]">
-              <span className="text-gold-dim text-deco">✦</span>
-              <span className="font-cinzel text-caption text-[#3e2208] tracking-[0.22em] uppercase">Tome of Spells</span>
-              <span className="text-gold-dim text-deco">✦</span>
+
+            {/* Tab toggle */}
+            <div className="flex items-center gap-2 mb-[clamp(4px,0.6vh,8px)]">
+              <button className={tabBtnCls(tab === 'mine')}   onClick={() => setTab('mine')}>My Spells</button>
+              <button className={tabBtnCls(tab === 'browse')} onClick={() => setTab('browse')}>Browse All</button>
             </div>
 
             <div className="deco-rule my-[clamp(4px,0.7vh,9px)]" />
 
+            {/* Browse filters (only in browse tab) */}
+            {tab === 'browse' && (
+              <div className="shrink-0 mb-[clamp(4px,0.6vh,8px)] flex flex-col gap-[clamp(4px,0.5vh,7px)]">
+                {/* Search input */}
+                <input
+                  type="text"
+                  placeholder="Search spells…"
+                  value={browseSearch}
+                  onChange={e => setBrowseSearch(e.target.value)}
+                  className="w-full font-fell-sc text-body text-ink rounded-sm px-2 py-[clamp(2px,0.3vh,5px)] bg-[rgba(255,240,180,0.35)] border border-[rgba(100,70,20,0.28)] outline-none focus:border-[rgba(100,70,20,0.55)] focus:bg-[rgba(255,240,180,0.55)] placeholder:text-[rgba(100,70,20,0.35)]"
+                />
+                {/* Level filter */}
+                <div className="flex flex-wrap gap-1">
+                  <button className={filterBtnCls(browseLevel === 'all')} onClick={() => setBrowseLevel('all')}>All</button>
+                  <button className={filterBtnCls(browseLevel === 0)}    onClick={() => setBrowseLevel(0)}>C</button>
+                  {[1,2,3,4,5,6,7,8,9].map(l => (
+                    <button key={l} className={filterBtnCls(browseLevel === l)} onClick={() => setBrowseLevel(l)}>{l}</button>
+                  ))}
+                </div>
+                {/* School filter */}
+                <div className="flex flex-wrap gap-1">
+                  <button className={filterBtnCls(browseSchool === 'all')} onClick={() => setBrowseSchool('all')}>All</button>
+                  {ALL_SCHOOLS.map(sc => (
+                    <button
+                      key={sc}
+                      className={filterBtnCls(browseSchool === sc)}
+                      style={browseSchool === sc ? { color: SCHOOL_COLOR[sc], borderColor: `${SCHOOL_COLOR[sc]}88` } : undefined}
+                      onClick={() => setBrowseSchool(sc)}
+                      title={sc}
+                    >
+                      {SCHOOL_SYMBOL[sc]}
+                    </button>
+                  ))}
+                </div>
+                <div className="deco-rule-subtle" />
+              </div>
+            )}
+
             {/* Spell list */}
             <div className="flex-1 overflow-y-auto overflow-x-hidden pr-0.5 parchment-scroll min-h-0">
+              {tab === 'mine' && characterSpells.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-full gap-3 text-[#9a8050] py-10">
+                  <div className="text-[2rem] opacity-30">✦</div>
+                  <p className="font-fell italic text-body text-center leading-[1.5] px-4">
+                    No spells learned yet.<br />Switch to Browse All to learn spells.
+                  </p>
+                </div>
+              )}
+              {tab === 'browse' && characterSpells.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-full gap-3 text-[#9a8050] py-10">
+                  <div className="text-[2rem] opacity-30">◌</div>
+                  <p className="font-fell italic text-body text-center leading-[1.5] px-4">No spells match your filters.</p>
+                </div>
+              )}
               {Object.entries(grouped)
                 .sort(([a], [b]) => Number(a) - Number(b))
                 .map(([lvl, spells]) => (
@@ -99,32 +225,64 @@ export function SpellBook({ character, onBack }: Props) {
                       {Number(lvl) === 0 ? 'Cantrips' : `${lvl}${ordinalSuffix(Number(lvl))} Level`}
                     </div>
                     {spells.map(spell => (
-                      <button
+                      <div
                         key={spell.id}
-                        onClick={() => setSelected(spell)}
                         className={[
-                          'flex items-center gap-[clamp(5px,0.6vw,10px)] w-full bg-transparent border-none',
+                          'flex items-center gap-[clamp(5px,0.6vw,10px)] w-full',
                           'px-[clamp(5px,0.6vw,10px)] py-[clamp(3px,0.5vh,8px)]',
-                          'cursor-pointer rounded-sm transition-colors text-left',
+                          'rounded-sm transition-colors',
                           selected?.id === spell.id
                             ? 'bg-[rgba(90,60,10,0.18)]'
                             : 'hover:bg-[rgba(90,60,10,0.10)]',
                         ].join(' ')}
                       >
+                        {/* School symbol */}
                         <span className="text-caption w-[clamp(14px,1.2vw,20px)] text-center shrink-0"
                               style={{ color: SCHOOL_COLOR[spell.school] }}>
                           {SCHOOL_SYMBOL[spell.school]}
                         </span>
-                        <span className={`font-fell-sc text-body text-ink flex-1 leading-[1.3] ${isPrepared(spell.id) ? 'font-bold' : ''}`}>
+
+                        {/* Spell name — click to view detail */}
+                        <button
+                          onClick={() => setSelected(spell)}
+                          className={`font-fell-sc text-body text-ink flex-1 leading-[1.3] text-left bg-transparent border-none cursor-pointer p-0 ${tab === 'mine' && isPrepared(spell.id) ? 'font-bold' : ''}`}
+                        >
                           {spell.name}
-                        </span>
+                        </button>
+
                         {spell.concentration && (
-                          <span className="font-cinzel text-deco text-gold-dim bg-[rgba(100,70,20,0.14)] px-1 py-0.5 rounded-sm">C</span>
+                          <span className="font-cinzel text-deco text-gold-dim bg-[rgba(100,70,20,0.14)] px-1 py-0.5 rounded-sm shrink-0">C</span>
                         )}
                         {spell.ritual && (
-                          <span className="font-cinzel text-deco text-gold-dim bg-[rgba(100,70,20,0.14)] px-1 py-0.5 rounded-sm">R</span>
+                          <span className="font-cinzel text-deco text-gold-dim bg-[rgba(100,70,20,0.14)] px-1 py-0.5 rounded-sm shrink-0">R</span>
                         )}
-                      </button>
+
+                        {tab === 'mine' && spell.level > 0 && (
+                          /* Prepare toggle — only for levelled spells in "mine" tab */
+                          <button
+                            onClick={() => togglePrepared(spell)}
+                            className={[
+                              'shrink-0 font-cinzel text-deco px-1.5 py-0.5 rounded-sm border cursor-pointer transition-colors',
+                              isPrepared(spell.id)
+                                ? 'text-[#4a7028] border-[rgba(74,112,40,0.4)] bg-[rgba(74,112,40,0.12)] hover:bg-[rgba(74,112,40,0.2)]'
+                                : 'text-[rgba(100,70,20,0.35)] border-[rgba(100,70,20,0.2)] bg-transparent hover:text-[#8a7040] hover:border-[rgba(100,70,20,0.4)]',
+                            ].join(' ')}
+                            title={isPrepared(spell.id) ? 'Unprepare' : 'Prepare'}
+                          >✦</button>
+                        )}
+
+                        {tab === 'browse' && (
+                          isKnown(spell.id) ? (
+                            <span className="shrink-0 font-cinzel text-deco text-[#4a7028] px-1 py-0.5" title="Already known">✓</span>
+                          ) : (
+                            <button
+                              onClick={() => { learnSpell(spell); setSelected(spell) }}
+                              className="shrink-0 font-cinzel text-deco text-[#8a7040] border border-[rgba(100,70,20,0.28)] px-1.5 py-0.5 rounded-sm cursor-pointer transition-colors hover:text-gold hover:border-[rgba(200,168,75,0.5)] bg-[rgba(90,60,10,0.06)]"
+                              title="Learn this spell"
+                            >+</button>
+                          )
+                        )}
+                      </div>
                     ))}
                   </div>
                 ))}
@@ -204,11 +362,61 @@ export function SpellBook({ character, onBack }: Props) {
                   )}
                 </div>
 
-                {isPrepared(selected.id) && (
-                  <div className="shrink-0 mt-[clamp(6px,1vh,12px)] inline-block font-cinzel text-badge tracking-[0.2em] text-[#4a7028] border border-[rgba(74,112,40,0.35)] px-[clamp(8px,1vw,14px)] py-[clamp(3px,0.4vh,6px)] rounded-sm bg-[rgba(74,112,40,0.07)]">
-                    ✦ Prepared
-                  </div>
-                )}
+                {/* Action buttons at the bottom */}
+                <div className="shrink-0 mt-[clamp(6px,1vh,12px)] flex flex-col gap-2">
+                  {tab === 'mine' && selected.level > 0 && (
+                    <button
+                      onClick={() => togglePrepared(selected)}
+                      className={[
+                        'font-cinzel text-badge tracking-[0.2em] border px-[clamp(8px,1vw,14px)] py-[clamp(3px,0.4vh,6px)] rounded-sm cursor-pointer transition-colors',
+                        isPrepared(selected.id)
+                          ? 'text-[#4a7028] border-[rgba(74,112,40,0.4)] bg-[rgba(74,112,40,0.09)] hover:bg-[rgba(74,112,40,0.18)]'
+                          : 'text-[#8a7040] border-[rgba(100,70,20,0.3)] bg-[rgba(90,60,10,0.06)] hover:text-gold hover:border-[rgba(100,70,20,0.5)]',
+                      ].join(' ')}
+                    >
+                      {isPrepared(selected.id) ? '✦ Prepared — click to unprepare' : '○ Unprepared — click to prepare'}
+                    </button>
+                  )}
+
+                  {tab === 'browse' && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {!isKnown(selected.id) ? (
+                        <button
+                          onClick={() => learnSpell(selected)}
+                          className="font-cinzel text-badge tracking-[0.18em] border border-[rgba(100,70,20,0.5)] px-[clamp(10px,1.2vw,18px)] py-[clamp(4px,0.5vh,8px)] rounded-sm cursor-pointer transition-colors text-[#e8d090] hover:border-[rgba(200,168,75,0.6)] hover:text-gold"
+                          style={{ background: 'linear-gradient(160deg, #3a2208 0%, #2a1606 100%)' }}
+                        >
+                          + Learn Spell
+                        </button>
+                      ) : (
+                        <>
+                          <span className="font-cinzel text-badge tracking-[0.18em] text-[#4a7028] border border-[rgba(74,112,40,0.35)] px-3 py-[clamp(4px,0.5vh,8px)] rounded-sm bg-[rgba(74,112,40,0.08)]">
+                            ✓ Known
+                          </span>
+                          <button
+                            onClick={() => forgetSpell(selected)}
+                            className="font-cinzel text-deco text-red-ink border border-[rgba(139,26,26,0.28)] px-3 py-[clamp(4px,0.5vh,8px)] rounded-sm cursor-pointer transition-colors hover:border-[rgba(139,26,26,0.5)] hover:bg-[rgba(139,26,26,0.06)]"
+                          >
+                            Forget Spell
+                          </button>
+                        </>
+                      )}
+                      {isKnown(selected.id) && selected.level > 0 && (
+                        <button
+                          onClick={() => togglePrepared(selected)}
+                          className={[
+                            'font-cinzel text-badge tracking-[0.15em] border px-3 py-[clamp(4px,0.5vh,8px)] rounded-sm cursor-pointer transition-colors',
+                            isPrepared(selected.id)
+                              ? 'text-[#4a7028] border-[rgba(74,112,40,0.4)] bg-[rgba(74,112,40,0.09)] hover:bg-[rgba(74,112,40,0.18)]'
+                              : 'text-[#8a7040] border-[rgba(100,70,20,0.3)] bg-[rgba(90,60,10,0.06)] hover:text-gold hover:border-[rgba(100,70,20,0.5)]',
+                          ].join(' ')}
+                        >
+                          {isPrepared(selected.id) ? '✦ Prepared' : '○ Prepare'}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center gap-4 text-[#9a8050]">
