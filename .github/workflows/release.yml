@@ -21,7 +21,7 @@ jobs:
       matrix:
         include:
           - platform: ubuntu-22.04
-            bundles: appimage,deb
+            bundles: appimage,deb,rpm
           - platform: macos-latest
             bundles: dmg
           - platform: windows-latest
@@ -73,9 +73,19 @@ jobs:
             Offline-first D&D 5e character manager.
 
             ### Installation
-            - **Linux**: download the `.AppImage` (run anywhere) or `.deb` (Debian/Ubuntu)
-            - **macOS**: download the `.dmg`
-            - **Windows**: download the `.msi` or `.exe` installer
+
+            **Windows** — download the `.msi` or `.exe` installer.
+            > SmartScreen may warn "Windows protected your PC" — click **More info → Run anyway**.
+            > The installer will set up WebView2 automatically if it is not already present.
+
+            **macOS** — download the `.dmg`, open it, and drag the app to Applications.
+            > Gatekeeper may block an unsigned app. If you see _"cannot be opened"_, right-click the app and choose **Open**, then confirm. Alternatively run in a terminal: `xattr -d com.apple.quarantine /Applications/open-dnd.app`
+
+            **Linux**
+            - `.AppImage` — runs on most distros. Make it executable first: `chmod +x open-dnd_*.AppImage && ./open-dnd_*.AppImage`
+              - **Arch / EndeavourOS / Manjaro**: AppImages need FUSE 2 — run `sudo pacman -S fuse2` once, then launch normally. Alternatively: `APPIMAGE_EXTRACT_AND_RUN=1 ./open-dnd_*.AppImage`
+            - `.deb` — Debian / Ubuntu: `sudo dpkg -i open-dnd_*.deb`
+            - `.rpm` — Fedora / openSUSE: `sudo rpm -i open-dnd_*.rpm`
           releaseDraft: ${{ github.event.inputs.draft || 'true' }}
           prerelease: false
           args: --bundles ${{ matrix.bundles }}
